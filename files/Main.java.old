@@ -1,0 +1,20 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        ArrayList<String> strs = new ArrayList<>();
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Please enter strings: (press Ctrl+Z to end)");
+        while (sc.hasNextLine()) {
+            strs.add(sc.nextLine());
+        }
+
+        System.out.println("You entered: " + strs);
+//        for (String s : strs) {
+//            System.out.println(s);
+//        }
+        sc.close();
+    }
+}

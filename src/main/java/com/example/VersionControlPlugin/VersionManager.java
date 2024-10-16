@@ -1,19 +1,19 @@
 package com.example.VersionControlPlugin;
 
+import com.example.VersionControlPlugin.dto.VirtualFileDTO;
 import com.example.VersionControlPlugin.enums.changeTypeEnum;
+import com.google.gson.Gson;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import net.minidev.json.JSONArray;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 
@@ -49,46 +49,30 @@ public final class VersionManager {
         return childrenFiles;
     }
 
-    public static String filePathJoin(String rootDir, String... subs) {
-
-        if (subs == null || subs.length == 0) {
-            return rootDir;
-        }
-        StringBuilder path = new StringBuilder(rootDir);
-        for (String sub : subs) {
-            String s = sub;
-            //若子目录前面也带了斜杠则去掉
-            if (s.startsWith("/")) {
-                s = s.substring(1);
-            }
-
-            if (path.toString().endsWith(File.separator) || path.toString().endsWith("/")) {
-                path.append(s);
-            } else {
-                path.append(File.separator).append(s);
-            }
-        }
-        return path.toString();
-    }
-
     public void cacheProject(Project project) {
         cachedFiles = getAllChildrenFiles(project);
 
-        Path newCacheFile = Paths.get(filePathJoin(project.getBasePath(), "initCacheProject.json"));
-
         try {
-            Path directoryPath = newCacheFile.getParent();
-            if (directoryPath != null) {
-                Files.createDirectories(directoryPath);
+            List<VirtualFileDTO> dtos = new ArrayList<>();
+            for (VirtualFile file : cachedFiles) {
+                VirtualFileDTO dto = new VirtualFileDTO();
+                dto.setName(file.getName());
+                dto.setPath(file.getPath());
+                dto.setLastModified(file.getTimeStamp());
+                dtos.add(dto);
             }
-            Files.writeString(newCacheFile, JSONArray.toJSONString(cachedFiles), StandardCharsets.UTF_8);
+            Path newCacheFilePath = Paths.get(project.getBasePath() + "TJAutoSave");
+            File newCacheFile = new File(project.getBasePath()+ "TJAutoSave\\initCacheProject.json");
+            if (newCacheFile.exists()) { // 文件存在
+                newCacheFile.delete();
+            }
+            Files.createDirectories(newCacheFilePath);
+            Gson gson = new Gson();
+            String json = gson.toJson(dtos);
+            Files.writeString(newCacheFile.toPath(), json, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        // 追加写模式
-//        Files.writeString(versionCacheFilePath, "Hello World", StandardOpenOption.APPEND);
-//        System.out.println("Project Cached");
     }
 
     public HashMap<String, changeTypeEnum> checkUpdate(Project project) {

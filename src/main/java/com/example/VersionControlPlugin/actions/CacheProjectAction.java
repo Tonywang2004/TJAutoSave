@@ -8,8 +8,7 @@ import com.intellij.openapi.project.Project;
 public class CacheProjectAction extends AnAction {
     public void actionPerformed(AnActionEvent e){
         Project project = e.getProject();
-        VersionManager versionManager = VersionManager.getInstance();
-        versionManager.cacheProject(project);
+        VersionManager.getInstance().cacheProject(project);
     }
 
 }

@@ -103,8 +103,6 @@ public class VersionControlUI extends JFrame{
         // versionPanel settings
         // ---- Initialize list & list model
         fileInfoListModel = new DefaultListModel<>();
-        Project project = ProjectManager.getInstance().getOpenProjects()[0];
-
 
         fileInfoList.setModel(fileInfoListModel);
         fileInfoList.setCellRenderer(new FileInfoRenderer());

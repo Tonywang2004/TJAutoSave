@@ -29,7 +29,11 @@
     <actions>
         <action id="VersionControlId" class="com.example.VersionControlPlugin.actions.VersionControl"
                 text="VersionControl" description="This is a fine-grained version control plugin.">
-            <add-to-group group-id="HelpMenu" anchor="last"/>
+            <add-to-group group-id="Vcs.MainMenu" anchor="last"/>
+        </action>
+        <action id="CacheProjectId" class="com.example.VersionControlPlugin.actions.CacheProjectAction"
+                text="CacheProject" description="Cache current project.">
+            <add-to-group group-id="Vcs.MainMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

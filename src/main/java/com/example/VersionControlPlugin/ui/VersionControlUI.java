@@ -6,11 +6,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
+import com.example.VersionControlPlugin.VersionManager;
+import com.example.VersionControlPlugin.enums.changeTypeEnum;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBUI;
@@ -100,12 +104,8 @@ public class VersionControlUI extends JFrame{
         // ---- Initialize list & list model
         fileInfoListModel = new DefaultListModel<>();
         Project project = ProjectManager.getInstance().getOpenProjects()[0];
-        String basePath = project.getBasePath();
-        if (basePath != null) {
-            listFilesInDirectory(basePath);
-        } else {
-            System.out.println("BasePath is Not a valid directory.");
-        }
+
+
         fileInfoList.setModel(fileInfoListModel);
         fileInfoList.setCellRenderer(new FileInfoRenderer());
         // ---- List selection event listener
@@ -134,21 +134,13 @@ public class VersionControlUI extends JFrame{
     }
 
     /*** Get the directory of project & Initialize version list ***/
-    private void listFilesInDirectory(String directoryPath) {
-        VirtualFile baseDir = VfsUtil.findFileByIoFile(new File(directoryPath), true);
-
-        if (baseDir != null && baseDir.isDirectory()) {
-            VirtualFile[] files = baseDir.getChildren();
-
-            for (VirtualFile file : files) {
-                if (file.isDirectory()) {
-                    listFilesInDirectory(file.getPath());
-                } else {
-                    fileInfoListModel.addElement(new FileInfo(file.getPath(), file.getName(), new java.util.Date(file.getTimeStamp()).toString()));
-                }
+    private void listFilesInDirectory(Project project) {
+        Map<String, changeTypeEnum> changedFilesInfo = VersionManager.getInstance().checkUpdate(project);
+        for (var changeFileInfo : changedFilesInfo.entrySet()){
+            VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(changeFileInfo.getKey());
+            if (file != null) {
+                fileInfoListModel.addElement(new FileInfo(file.getPath(), file.getName(), new java.util.Date(file.getTimeStamp()).toString(), changeFileInfo.getValue()));
             }
-        } else {
-            System.out.println("Directory not found: " + directoryPath);
         }
     }
 
@@ -186,11 +178,11 @@ public class VersionControlUI extends JFrame{
     }
 
     /*** File info in version list ***/
-    private record FileInfo(String filePath, String fileName, String modifyTime) {
+    private record FileInfo(String filePath, String fileName, String modifyTime, changeTypeEnum changeType) {
 
         @Override
         public String toString() {
-            return fileName + " " + modifyTime;
+            return fileName + " (" + changeType + ":" + modifyTime + ")";
         }
     }
 }

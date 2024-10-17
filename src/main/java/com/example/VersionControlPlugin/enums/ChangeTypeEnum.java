@@ -1,11 +1,11 @@
 package com.example.VersionControlPlugin.enums;
 
-public enum changeTypeEnum {
+public enum ChangeTypeEnum {
     Unchanged(""), Changed("Modified"), New("New"), Deleted("Deleted");
 
     private String displayInfo;
 
-    changeTypeEnum(String displayInfo) {
+    ChangeTypeEnum(String displayInfo) {
         this.displayInfo = displayInfo;
     }
 

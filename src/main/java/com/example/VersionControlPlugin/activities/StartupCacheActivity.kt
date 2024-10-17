@@ -6,7 +6,7 @@ import com.intellij.openapi.startup.ProjectActivity
 
 class StartupCacheActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
-        VersionManager.getInstance().cacheProject(project)
+        VersionManager.getInstance().saveProject(project)
         return
     }
 }

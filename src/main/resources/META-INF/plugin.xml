@@ -27,18 +27,15 @@
         <postStartupActivity id="StartupCacheActivity"
                              implementation="com.example.VersionControlPlugin.activities.StartupCacheActivity"
                              order="last"/>
-        <notificationGroup id="ProjectCache" displayType="BALLOON"/>
+        <notificationGroup id="TJAutoSave" displayType="BALLOON"/>
     </extensions>
     <actions>
         <group id="TJAutoSave" text="TJAutoSave" description="This is a fine-grained version control plugin.">
             <action id="VersionControl" class="com.example.VersionControlPlugin.actions.VersionControl"
-                    text="CheckVersion" description="This is a fine-grained version control plugin.">
-            </action>
-            <action id="SaveVersionAction" class="com.example.VersionControlPlugin.actions.CacheProjectAction"
-                    text="SaveVersion" description="Save current project.">
-            </action>
-            <add-to-group group-id="MainMenu" anchor="last">
-            </add-to-group>
+                    text="CheckVersion" description="This is a fine-grained version control plugin."/>
+            <action id="SaveChangesAction" class="com.example.VersionControlPlugin.actions.SaveChangesAction"
+                    text="SaveChanges" description="Save current project."/>
+            <add-to-group group-id="MainMenu" anchor="last"/>
         </group>
     </actions>
 </idea-plugin>

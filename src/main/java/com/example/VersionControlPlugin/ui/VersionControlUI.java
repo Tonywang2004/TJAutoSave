@@ -2,21 +2,19 @@ package com.example.VersionControlPlugin.ui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Map;
 
 import com.example.VersionControlPlugin.VersionManager;
-import com.example.VersionControlPlugin.enums.changeTypeEnum;
+import com.example.VersionControlPlugin.dto.VirtualFileDTO;
+import com.example.VersionControlPlugin.enums.ChangeTypeEnum;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.Gray;
-import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBUI;
 
 import org.fife.ui.rtextarea.*;
@@ -133,11 +131,17 @@ public class VersionControlUI extends JFrame{
 
     /*** Get the directory of project & Initialize version list ***/
     private void listFilesInDirectory(Project project) {
-        Map<String, changeTypeEnum> changedFilesInfo = VersionManager.getInstance().checkUpdate(project);
-        for (var changeFileInfo : changedFilesInfo.entrySet()){
-            VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(changeFileInfo.getKey());
+        java.util.List<VirtualFileDTO> changedFilesInfo = new ArrayList<>();
+        try{
+            changedFilesInfo = VersionManager.getInstance().getChangedFiles(project);
+        } catch (IOException e){
+            System.out.println("IOException in getting changed files");
+        }
+
+        for (var changeFileInfo : changedFilesInfo){
+            VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(changeFileInfo.url);
             if (file != null) {
-                fileInfoListModel.addElement(new FileInfo(file.getPath(), file.getName(), new java.util.Date(file.getTimeStamp()).toString(), changeFileInfo.getValue()));
+                fileInfoListModel.addElement(new FileInfo(file.getPath(), file.getName(), new java.util.Date(file.getTimeStamp()).toString(), changeFileInfo.changeType));
             }
         }
     }
@@ -176,7 +180,7 @@ public class VersionControlUI extends JFrame{
     }
 
     /*** File info in version list ***/
-    private record FileInfo(String filePath, String fileName, String modifyTime, changeTypeEnum changeType) {
+    private record FileInfo(String filePath, String fileName, String modifyTime, ChangeTypeEnum changeType) {
 
         @Override
         public String toString() {

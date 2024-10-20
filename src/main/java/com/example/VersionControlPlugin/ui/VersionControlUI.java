@@ -5,12 +5,11 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Map;
 
 import com.example.VersionControlPlugin.VersionManager;
-import com.example.VersionControlPlugin.dto.VirtualFileDTO;
-import com.example.VersionControlPlugin.enums.ChangeTypeEnum;
+import com.example.VersionControlPlugin.enums.changeTypeEnum;
+import com.example.VersionControlPlugin.Config;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -20,7 +19,6 @@ import com.intellij.util.ui.JBUI;
 import org.fife.ui.rtextarea.*;
 import org.fife.ui.rsyntaxtextarea.*;
 
-import com.example.VersionControlPlugin.Config;
 
 /*** Main window of the plugin ***/
 public class VersionControlUI extends JFrame{
@@ -31,16 +29,16 @@ public class VersionControlUI extends JFrame{
 
     // Control window
     private JPanel controlPanel;
+    private JLabel controlLabel;
     private JSplitPane controlSplitPane;
-    // ---- Version window
-    private JPanel versionPanel;
-    private JLabel fileInfoLabel;
+    // ---- Version Window
+    private JList<VersionInfo> versionList;
+    private DefaultListModel<VersionInfo> versionListModel;
+    private JScrollPane versionScrollPane;
+    // ---- FileInfo window
     private JList<FileInfo> fileInfoList;
     private DefaultListModel<FileInfo> fileInfoListModel;
     private JScrollPane fileInfoScrollPane;
-    // ---- Git window
-    private JPanel gitPanel;
-    private JLabel gitActionLabel;
 
     // Content window
     private JPanel contentPanel;
@@ -59,7 +57,7 @@ public class VersionControlUI extends JFrame{
 
     public VersionControlUI() {
         // mainPanel settings
-        setTitle("Version Control Plugin");
+        setTitle("TJAutoSave");
         setSize(Config.FrameWidth, Config.FrameHeight);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null); // In the middle
@@ -84,27 +82,33 @@ public class VersionControlUI extends JFrame{
         oldContentScrollPane.setViewportView(oldContentArea);
         newContentScrollPane.setViewportView(newContentArea);
         // ---- Add LineNumberList
-        oldContentLineNumberList = new LineNumberList(oldContentArea) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                g.setColor(Gray._50);
-                g.fillRect(0, 0, getWidth(), getHeight());
-                g.setColor(Gray._255);
-                g.setFont(new Font("Monospaced", Font.PLAIN, 12));
-                super.paintComponent(g);
-            }
-        };
+        oldContentLineNumberList = new LineNumberList(oldContentArea);
         newContentLineNumberList = new LineNumberList(newContentArea);
         oldContentScrollPane.setRowHeaderView(oldContentLineNumberList);
         newContentScrollPane.setRowHeaderView(newContentLineNumberList);
 
-        // versionPanel settings
+        // ControlPanel settings
         // ---- Initialize list & list model
+        versionListModel = new DefaultListModel<>();
         fileInfoListModel = new DefaultListModel<>();
-
+        versionList.setModel(versionListModel);
         fileInfoList.setModel(fileInfoListModel);
+        versionList.setCellRenderer(new VersionRenderer());
         fileInfoList.setCellRenderer(new FileInfoRenderer());
+        versionListModel.addElement(new VersionInfo("Version 1", "2024-01-01 01:01"));
+        fileInfoListModel.addElement(new FileInfo("D:\\IDEAProjects\\MyFirstJavaProgram\\src\\Main.java", "Main.java", "2024-01-01 01:01", changeTypeEnum.Changed));
         // ---- List selection event listener
+        versionList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                VersionInfo selectedVersion = (VersionInfo) versionList.getSelectedValue();
+                if (selectedVersion != null) {
+                    // Get Version Content
+
+                    // Set File List
+                    // listFilesInVersion();
+                }
+            }
+        });
         fileInfoList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 FileInfo selectedFile = fileInfoList.getSelectedValue();
@@ -129,19 +133,13 @@ public class VersionControlUI extends JFrame{
         });
     }
 
-    /*** Get the directory of project & Initialize version list ***/
-    private void listFilesInDirectory(Project project) {
-        java.util.List<VirtualFileDTO> changedFilesInfo = new ArrayList<>();
-        try{
-            changedFilesInfo = VersionManager.getInstance().getChangedFiles(project);
-        } catch (IOException e){
-            System.out.println("IOException in getting changed files");
-        }
-
-        for (var changeFileInfo : changedFilesInfo){
-            VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(changeFileInfo.url);
+    /*** Initialize fileInfo list ***/
+    private void listFilesInVersion(Project project) {
+        Map<String, changeTypeEnum> changedFilesInfo = VersionManager.getInstance().checkUpdate(project);
+        for (var changeFileInfo : changedFilesInfo.entrySet()) {
+            VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(changeFileInfo.getKey());
             if (file != null) {
-                fileInfoListModel.addElement(new FileInfo(file.getPath(), file.getName(), new java.util.Date(file.getTimeStamp()).toString(), changeFileInfo.changeType));
+                fileInfoListModel.addElement(new FileInfo(file.getPath(), file.getName(), new java.util.Date(file.getTimeStamp()).toString(), changeFileInfo.getValue()));
             }
         }
     }
@@ -161,7 +159,7 @@ public class VersionControlUI extends JFrame{
         }
     }
 
-    /*** Version list cell renderer ***/
+    /*** FileInfo list cell renderer ***/
     private static class FileInfoRenderer extends DefaultListCellRenderer {
 
         @Override
@@ -171,6 +169,24 @@ public class VersionControlUI extends JFrame{
 
             // text label per cell
             label.setText("<html><font size='5'>Modify:  <b>" + fileInfo.fileName() + "</b></font><br><font size='3'>" + fileInfo.modifyTime() + "</font></html>");
+            label.setBorder(JBUI.Borders.empty(8, 12));
+            label.setOpaque(true);
+            label.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+            label.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+            return label;
+        }
+    }
+
+    /*** Version list cell renderer ***/
+    private static class VersionRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            VersionInfo versionInfo = (VersionInfo) value;
+            JLabel label = new JLabel();
+
+            // text label per cell
+            label.setText("<html><font size='5'>Version:  <b>" + versionInfo.versionName() + "</b></font><br><font size='3'>" + versionInfo.modifyTime() + "</font></html>");
             label.setBorder(JBUI.Borders.empty(10, 15));
             label.setOpaque(true);
             label.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
@@ -179,12 +195,21 @@ public class VersionControlUI extends JFrame{
         }
     }
 
-    /*** File info in version list ***/
-    private record FileInfo(String filePath, String fileName, String modifyTime, ChangeTypeEnum changeType) {
+    /*** File info in FileInfo list ***/
+    private record FileInfo(String filePath, String fileName, String modifyTime, changeTypeEnum changeType) {
 
         @Override
         public String toString() {
             return fileName + " (" + changeType + ":" + modifyTime + ")";
+        }
+    }
+
+    /*** Version info in Version list ***/
+    private record VersionInfo(String versionName, String modifyTime) {
+
+        @Override
+        public String toString() {
+            return versionName + " (" + modifyTime + ")";
         }
     }
 }

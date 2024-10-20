@@ -3,6 +3,7 @@ package com.example.VersionControlPlugin;
 import com.example.VersionControlPlugin.objects.Changes;
 import com.example.VersionControlPlugin.objects.FileStatus;
 import com.example.VersionControlPlugin.utils.Util;
+import com.example.VersionControlPlugin.objects.FileCompare;
 import com.intellij.openapi.project.Project;
 
 import java.io.BufferedReader;
@@ -151,16 +152,6 @@ public class VersionManager {
         Files.createDirectory(temp);
 
         return true;
-    }
-
-    public static class FileCompare {
-        public List<String> before;
-        public List<String> after;
-
-        public FileCompare(List<String> before, List<String> after) {
-            this.before = before;
-            this.after = after;
-        }
     }
 
     public List<Map<String, String>> getProjectVersionInfo() throws IOException {

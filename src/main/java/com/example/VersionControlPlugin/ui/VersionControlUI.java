@@ -3,16 +3,13 @@ package com.example.VersionControlPlugin.ui;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
 import com.example.VersionControlPlugin.VersionManager;
 import com.example.VersionControlPlugin.Config;
-import com.example.VersionControlPlugin.objects.Changes;
 import com.example.VersionControlPlugin.objects.FileStatus;
-import com.example.VersionControlPlugin.objects.FileNode;
+import com.example.VersionControlPlugin.objects.FileCompare;
 import com.intellij.diff.DiffContentFactory;
 import com.intellij.diff.DiffManager;
 import com.intellij.diff.requests.SimpleDiffRequest;
@@ -40,8 +37,8 @@ public class VersionControlUI extends JFrame {
     private DefaultListModel<VersionInfo> versionListModel;
     private JScrollPane versionScrollPane;
     // ---- FileInfo window
-    private JList<FileNode> fileNodeList;
-    private DefaultListModel<FileNode> fileNodeListModel;
+    private JList<FileInfo> fileInfoList;
+    private DefaultListModel<FileInfo> fileInfoListModel;
     private JScrollPane fileInfoScrollPane;
 
     // Content window
@@ -94,11 +91,11 @@ public class VersionControlUI extends JFrame {
         // ControlPanel settings
         // ---- Initialize list & list model
         versionListModel = new DefaultListModel<>();
-        fileNodeListModel = new DefaultListModel<>();
+        fileInfoListModel = new DefaultListModel<>();
         versionList.setModel(versionListModel);
-        fileNodeList.setModel(fileNodeListModel);
+        fileInfoList.setModel(fileInfoListModel);
         versionList.setCellRenderer(new VersionRenderer());
-        fileNodeList.setCellRenderer(new FileInfoRenderer());
+        fileInfoList.setCellRenderer(new FileInfoRenderer());
 
 
         // get saved versions
@@ -119,21 +116,21 @@ public class VersionControlUI extends JFrame {
 
                 if (selectedVersion != null) {
                     // Get Version Content
-                    fileNodeListModel.clear();
+                    fileInfoListModel.clear();
                     for (Map.Entry<Path, FileStatus> entry : VersionManager.getInstance().getChangeDirOfDesVersion(selectedVersion.versionName).entrySet()) {
-                        fileNodeListModel.addElement(new FileNode(entry, index));
+                        fileInfoListModel.addElement(new FileInfo(entry, index));
                     }
                 }
             }
         });
-        fileNodeList.addListSelectionListener(e -> {
+        fileInfoList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                FileNode selectedFile = fileNodeList.getSelectedValue();
+                FileInfo selectedFile = fileInfoList.getSelectedValue();
                 if (selectedFile != null) {
                     Path filePath = selectedFile.entry.getKey();
                     Integer version = selectedFile.version;
                     String TitleName = selectedFile.toString();
-                    VersionManager.FileCompare newContent = VersionManager.getInstance().getFileOfCertainVersion(filePath, version);
+                    FileCompare newContent = VersionManager.getInstance().getFileOfCertainVersion(filePath, version);
                     DiffManager.getInstance().showDiff(project, new SimpleDiffRequest(
                             TitleName,
                             DiffContentFactory.getInstance().create(project, String.join("\n", newContent.before)),
@@ -151,7 +148,7 @@ public class VersionControlUI extends JFrame {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            FileNode fileInfo = (FileNode) value;
+            FileInfo fileInfo = (FileInfo) value;
             JLabel label = new JLabel();
 
             // text label per cell
@@ -163,6 +160,17 @@ public class VersionControlUI extends JFrame {
             label.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
             label.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
             return label;
+        }
+    }
+
+    /*** File info in File list ***/
+    private record FileInfo(Map.Entry<Path, FileStatus> entry, Integer version) {
+        
+        @Override
+        public String toString() {
+            return entry.getValue().getStatus()
+                    + "-" + entry.getKey().getFileName().toString()
+                    + "-" + entry.getValue().getTimestamp();
         }
     }
 

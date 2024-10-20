@@ -31,10 +31,10 @@
     </extensions>
     <actions>
         <group id="TJAutoSave" text="TJAutoSave" description="This is a fine-grained version control plugin.">
-            <action id="VersionControl" class="com.example.VersionControlPlugin.actions.VersionControl"
-                    text="CheckVersion" description="This is a fine-grained version control plugin."/>
+            <action id="VersionControl" class="com.example.VersionControlPlugin.actions.showUIAction"
+                    text="Check Version" description="This is a fine-grained version control plugin."/>
             <action id="SaveChangesAction" class="com.example.VersionControlPlugin.actions.SaveChangesAction"
-                    text="SaveChanges" description="Save current project."/>
+                    text="Save Changes" description="Save current project."/>
             <add-to-group group-id="MainMenu" anchor="last"/>
         </group>
     </actions>

@@ -9,10 +9,13 @@ import org.jetbrains.annotations.NotNull;
 // Open the main window of the plugin
 public class showUIAction extends AnAction {
 
-    private VersionControlUI versionControlUI = new VersionControlUI();
+    private VersionControlUI versionControlUI = null;
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        if (versionControlUI == null) {
+            versionControlUI = new VersionControlUI(e.getProject());
+        }
         versionControlUI.setVisible(true);
         Config.versionControlUI = versionControlUI;
     }

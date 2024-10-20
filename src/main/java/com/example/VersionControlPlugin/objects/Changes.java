@@ -1,4 +1,4 @@
-package com.example.VersionControlPlugin.dto;
+package com.example.VersionControlPlugin.objects;
 
 import java.io.*;
 import java.nio.file.Files;

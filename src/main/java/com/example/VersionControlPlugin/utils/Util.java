@@ -1,6 +1,6 @@
 package com.example.VersionControlPlugin.utils;
 
-import com.example.VersionControlPlugin.dto.FileStatus;
+import com.example.VersionControlPlugin.objects.FileStatus;
 import com.example.VersionControlPlugin.VersionManager;
 
 import java.io.*;
@@ -8,7 +8,6 @@ import java.nio.file.*;
 import java.util.HashMap;
 
 public class Util {
-    //将文件全部转移
     public static void readPaths(Path directoryPath,Path des){
         if (Files.isDirectory(directoryPath)) {
             StringBuilder paths = new StringBuilder();
@@ -43,47 +42,9 @@ public class Util {
         }
     }
 
-    public static String[] splitLine(String line) {
-        // 查找第一个冒号
-        int colonIndex = line.indexOf(':');
-        if (colonIndex == -1) {
-            System.err.println("没有找到冒号: " + line);
-            return null;
-        }
-
-        // 获取第一个冒号前的部分
-        String part1 = line.substring(0, colonIndex).trim();
-
-        // 获取冒号后的内容
-        String rest = line.substring(colonIndex + 1).trim();
-
-        // 查找第一个空格
-        int spaceIndex = rest.indexOf(' ');
-        String part2, part3;
-
-        if (spaceIndex == -1) {
-            part2 = rest; // 如果没有空格，则整个部分都属于第二段
-            part3 = "";   // 第三段为空
-        } else {
-            // 获取第一个空格前的部分和空格后剩余的部分
-            part2 = rest.substring(0, spaceIndex).trim();
-            part3 = rest.substring(spaceIndex + 1).trim();
-        }
-
-        return new String[]{part1, part2, part3};
-    }
-
     public static String getLastPartBeforeSpace(String line) {
-        // 查找最后一个空格的位置
         int SpaceIndex = line.indexOf(' ');
-
-        // 如果没有空格，返回整行
-        if (SpaceIndex == -1) {
-            return line.trim();
-        }
-
-        // 获取最后一个空格前的内容
-        return line.substring(0, SpaceIndex).trim();
+        return SpaceIndex == -1 ? line.trim() : line.substring(0, SpaceIndex).trim();
     }
 
     public static boolean isInProjectDir(Path file){
@@ -98,18 +59,15 @@ public class Util {
     }
 
     public static void deleteDirectory(Path directoryPath) throws IOException {
-        // 使用Files.walkFileTree遍历文件夹
         Files.walkFileTree(directoryPath, new java.nio.file.SimpleFileVisitor<>() {
             @Override
             public java.nio.file.FileVisitResult visitFile(Path file, java.nio.file.attribute.BasicFileAttributes attrs) throws IOException {
-                // 删除文件
                 Files.delete(file);
                 return java.nio.file.FileVisitResult.CONTINUE;
             }
 
             @Override
             public java.nio.file.FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                // 删除目录
                 Files.delete(dir);
                 return java.nio.file.FileVisitResult.CONTINUE;
             }

@@ -1,6 +1,6 @@
 package com.example.VersionControlPlugin.listener;
 
-import com.example.VersionControlPlugin.dto.FileStatus;
+import com.example.VersionControlPlugin.objects.FileStatus;
 import com.example.VersionControlPlugin.utils.Util;
 import com.example.VersionControlPlugin.VersionManager;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -36,13 +36,10 @@ public class FileListener implements VirtualFileListener {
     public void contentsChanged(@NotNull VirtualFileEvent event) {
         VirtualFile virtualFile = event.getFile();
         if (!virtualFile.isDirectory() && Util.isInProjectDir(virtualFile.toNioPath())) {
-            Path filePath = Paths.get(virtualFile.getPath());
-            String filename = VersionManager.getInstance().changeMap.get(Paths.get(event.getFile().getPath())).getHashCode();
-            Path codeVersion = VersionManager.getInstance().projectBasePath.resolve(VersionManager.versionSavePath);
-            Path temp = codeVersion.resolve(VersionManager.tempPath);
-            Path newpath = temp.resolve(filename);
+            Path temp = VersionManager.getInstance().projectBasePath.resolve(VersionManager.versionSavePath).resolve(VersionManager.tempPath);
+            Path newpath = temp.resolve(VersionManager.getInstance().changeMap.get(Paths.get(event.getFile().getPath())).getHashCode());
             try {
-                if (Files.mismatch(filePath, newpath) == -1L) {
+                if (Files.mismatch(Paths.get(virtualFile.getPath()), newpath) == -1L) {
                     VersionManager.getInstance().changeMap.remove(Paths.get(event.getFile().getPath()));
                     Files.delete(newpath);
                 }
@@ -52,51 +49,32 @@ public class FileListener implements VirtualFileListener {
         }
     }
 
-
     private void storeChanges(@NotNull VirtualFileEvent event, String type) {
         VirtualFile virtualFile = event.getFile();
-        //判断是否为文件，且判断是否是插件产生的文件，若是文件且不是插件产生的文件，继续
         if (!virtualFile.isDirectory() && Util.isInProjectDir(virtualFile.toNioPath())) {
-            Path filePath = Paths.get(virtualFile.getPath()); // 获取文件的路径
-            System.out.println("A file has been " + type + ": " + filePath);
+            Path filePath = Paths.get(virtualFile.getPath());
+            System.out.println(type + ": " + filePath);
             HashMap<Path, FileStatus> map = VersionManager.getInstance().changeMap;
 
-            //获取时间
-            LocalDateTime currentDateTime = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String formattedDateTime = currentDateTime.format(formatter);
+            String formattedDateTime = LocalDateTime.now().format(formatter);
 
             if (!map.containsKey(filePath)) {
                 FileStatus status = new FileStatus(type, formattedDateTime, String.valueOf(filePath.hashCode()));
                 map.put(filePath, status);
             } else {
                 String lastStatus = map.get(filePath).getStatus();
-                if (type.equals("CREATE")) {
-                    throw new RuntimeException("记录错误");
-                }
-                switch (lastStatus) {
-                    case "CHANGE":
-                        if (type.equals("CREATE")) {
-                            throw new RuntimeException("记录错误");
-                        }
-                        break;
-                    case "CREATE":
-                        if (type.equals("CREATE")) {
-                            throw new RuntimeException("记录错误");
-                        } else if (type.equals("DELETE")) {
-                            map.remove(filePath);
-                            return;
-                        } else {
-                            type = "CREATE";
-                        }
-                        break;
-                    default:
-                        if (type.equals("CREATE")) {
-                            type = "CHANGE";
-                        } else {
-                            throw new RuntimeException("记录错误");
-                        }
-                        break;
+                if (lastStatus.equals("CREATE")) {
+                    if (type.equals("DELETE")) {
+                        map.remove(filePath);
+                        return;
+                    } else {
+                        type = "CREATE";
+                    }
+                } else {
+                    if (type.equals("CREATE")) {
+                        type = "CHANGE";
+                    }
                 }
                 map.get(filePath).setStatus(type);
                 map.get(filePath).setTimestamp(formattedDateTime);

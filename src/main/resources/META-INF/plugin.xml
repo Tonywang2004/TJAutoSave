@@ -25,7 +25,7 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity id="StartupCacheActivity"
-                             implementation="com.example.VersionControlPlugin.activities.StartupCacheActivity"
+                             implementation="com.example.VersionControlPlugin.activities.StartupActivity"
                              order="last"/>
         <notificationGroup id="TJAutoSave" displayType="BALLOON"/>
     </extensions>

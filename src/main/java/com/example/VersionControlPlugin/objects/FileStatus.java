@@ -1,4 +1,4 @@
-package com.example.VersionControlPlugin.dto;
+package com.example.VersionControlPlugin.objects;
 
 public class FileStatus {
     private String status;

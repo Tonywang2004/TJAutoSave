@@ -58,7 +58,7 @@
                     <properties/>
                     <border type="none"/>
                     <children>
-                      <component id="4d609" class="javax.swing.JList" binding="fileInfoList">
+                      <component id="4d609" class="javax.swing.JList" binding="fileNodeList">
                         <constraints/>
                         <properties>
                           <background color="-13487566"/>

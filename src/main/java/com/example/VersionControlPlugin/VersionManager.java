@@ -38,7 +38,7 @@ public class VersionManager {
 
     public void init(Project project) throws IOException {
         Path projectBasePath = Paths.get(project.getBasePath());
-        versionManager.projectBasePath = projectBasePath;
+        VersionManager.getInstance().projectBasePath = projectBasePath;
 
         Path versionPath = projectBasePath.resolve(versionSavePath);
         if (!Files.exists(versionPath)) {
@@ -54,21 +54,21 @@ public class VersionManager {
         if (!Files.exists(versionInfoPath)) {
             Files.createFile(versionInfoPath);
             String formattedDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            Files.writeString(versionInfoPath, versionManager.version + " " + formattedDateTime + "\n", StandardOpenOption.APPEND);
+            Files.writeString(versionInfoPath, version + " " + formattedDateTime + "\n", StandardOpenOption.APPEND);
             // V1.0
-            Path ver = versionPath.resolve(versionPathPrefix + versionManager.version);
+            Path ver = versionPath.resolve(versionPathPrefix + version);
             if (!Files.exists(ver)) {
                 Files.createDirectory(ver);
-                Util.readPaths(versionManager.projectBasePath.resolve("src"), ver.resolve(projectDirPath));
+                Util.readPaths(projectBasePath.resolve("src"), ver.resolve(projectDirPath));
             }
         } else {
             getCurrentVersion(versionInfoPath, versionManager);
         }
         Path MapTemp = tempDir.resolve(mapTempPath);
         if (!Files.exists(MapTemp)) {
-            versionManager.changeMap = new HashMap<>();
+            changeMap = new HashMap<>();
         } else {
-            versionManager.changeMap = Util.readHashMapFromFile(MapTemp);
+            changeMap = Util.readHashMapFromFile(MapTemp);
         }
     }
 
@@ -257,7 +257,7 @@ public class VersionManager {
                 if (!Files.exists(codeVersion)) {
                     Files.createFile(codeVersion);
                 }
-                Util.writeHashMapToFile(changeMap, codeVersion);
+                Util.writeHashMapToFile(changeMap, codeVersion);// save changeMap to MapTempFile
             } else {
                 Files.deleteIfExists(codeVersion);
             }

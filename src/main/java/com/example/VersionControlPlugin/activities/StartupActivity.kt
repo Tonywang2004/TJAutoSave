@@ -3,6 +3,12 @@ package com.example.VersionControlPlugin.activities
 import com.example.VersionControlPlugin.VersionManager
 import com.example.VersionControlPlugin.listener.CloseCacheListener
 import com.example.VersionControlPlugin.listener.FileListener
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.startup.ProjectActivity
@@ -21,12 +27,24 @@ class StartupActivity : ProjectActivity {
         VirtualFileManager.getInstance().addVirtualFileListener(FileListener())
         try {
             VersionManager.getInstance().init(project)
-            Timer(100) { e: ActionEvent? ->
+            Timer(10 * 1000) { e: ActionEvent? ->
                 SwingUtilities.invokeLater {
-                    try {
-                        VersionManager.getInstance().saveChanges()
-                    } catch (ex: IOException) {
-                        ex.printStackTrace()
+                    ApplicationManager.getApplication().invokeLater {
+                        runWriteAction {
+                            try {
+                                FileDocumentManager.getInstance().saveAllDocuments()
+                                if (VersionManager.getInstance().saveChanges()) {
+                                    Notifications.Bus.notify(
+                                        Notification(
+                                            "TJAutoSave", "TJAutoSave",
+                                            "Progress autosaved!", NotificationType.INFORMATION
+                                        ), project
+                                    )
+                                }
+                            } catch (ex: IOException) {
+                                ex.printStackTrace()
+                            }
+                        }
                     }
                 }
             }.start()

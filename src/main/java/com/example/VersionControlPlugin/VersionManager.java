@@ -4,8 +4,11 @@ import com.example.VersionControlPlugin.objects.Changes;
 import com.example.VersionControlPlugin.objects.FileStatus;
 import com.example.VersionControlPlugin.utils.Util;
 import com.example.VersionControlPlugin.objects.FileCompare;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 
+import javax.swing.*;
 import java.io.*;
 import java.nio.file.*;
 import java.time.LocalDateTime;
@@ -40,6 +43,8 @@ public class VersionManager {
         Path versionPath = projectBasePath.resolve(versionSavePath);
         if (!Files.exists(versionPath)) {
             Files.createDirectory(versionPath);
+            String sets = "attrib +H \"" + versionPath.toAbsolutePath() + "\"";
+            Runtime.getRuntime().exec(sets);//设置文件夹为隐藏
         }
 
         Path tempDir = versionPath.resolve(tempPath);
@@ -64,6 +69,7 @@ public class VersionManager {
         Path MapTemp = tempDir.resolve(mapTempPath);
         changeMap = Files.exists(MapTemp) ? Util.readHashMapFromFile(MapTemp) : new HashMap<>();
     }
+
     public static String readLastLine(File file) throws IOException {
         // 读取文件的最后一行
         RandomAccessFile fileReader = null;
@@ -91,6 +97,7 @@ public class VersionManager {
             }
         }
     }
+
     private static void getCurrentVersion(Path versionInfo, VersionManager versionController) {
         String filePath = versionInfo.toString();
         File file = new File(filePath);
@@ -274,5 +281,19 @@ public class VersionManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void clearCache(Project project) {
+        SwingUtilities.invokeLater(() -> {
+            ApplicationManager.getApplication().invokeLater(() -> {
+                try {
+                    Util.deleteDirectory(projectBasePath.resolve(versionSavePath));
+                    changeMap.clear();
+                    init(project);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            });
+        });
     }
 }

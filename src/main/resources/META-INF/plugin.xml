@@ -35,6 +35,8 @@
                     text="Check Version" description="This is a fine-grained version control plugin."/>
             <action id="SaveChangesAction" class="com.example.VersionControlPlugin.actions.SaveChangesAction"
                     text="Save Changes" description="Save current project."/>
+            <action id="ClearCacheAction" class="com.example.VersionControlPlugin.actions.ClearCacheAction"
+                    text="Clear Cache" description="Clear all cached versions."/>
             <action id="GitCommitActions" class="com.example.VersionControlPlugin.actions.GitCommitActions" text="Create Fine-Grained Branch"
                     description="Creates a new branch and performs fine-grained commits"/>
                 <add-to-group group-id="ToolsMenu" anchor="first"/>

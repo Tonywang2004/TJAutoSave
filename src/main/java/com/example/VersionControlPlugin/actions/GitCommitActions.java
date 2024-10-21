@@ -87,9 +87,9 @@ public class GitCommitActions extends AnAction {
             GitLineHandler statusHandler = new GitLineHandler(project, root, GitCommand.STATUS);
             git.runCommand(statusHandler);
 
-            //添加所有文件的更改
+            //添加src文件夹下所有文件的更改
             GitLineHandler addHandler = new GitLineHandler(project, root, GitCommand.ADD);
-            addHandler.addParameters(".");
+            addHandler.addParameters("./src");
             git.runCommand(addHandler);
 
             //提交更改

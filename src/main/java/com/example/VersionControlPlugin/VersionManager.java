@@ -20,7 +20,7 @@ public class VersionManager {
 
     public static final String versionSavePath = ".TJAutoSave";
     public static final String tempPath = "temp";
-    private static final String versionPathPrefix = "Version ";
+    private static final String versionPathPrefix = "Version";
     private final String verInfoPath = "verInfo.";
     private final String projectDirPath = "projectDir.";
     private final String changePath = "change.";

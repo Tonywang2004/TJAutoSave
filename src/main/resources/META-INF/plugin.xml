@@ -35,6 +35,8 @@
                     text="Check Version" description="This is a fine-grained version control plugin."/>
             <action id="SaveChangesAction" class="com.example.VersionControlPlugin.actions.SaveChangesAction"
                     text="Save Changes" description="Save current project."/>
+            <action id="CreateNewBranch" class="com.example.VersionControlPlugin.actions.CreateNewBranch"
+                    text="Create New Branch" description="Create new branch"/>
             <add-to-group group-id="MainMenu" anchor="last"/>
         </group>
     </actions>

@@ -20,7 +20,7 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
-
+    <depends>Git4Idea</depends>
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
@@ -35,8 +35,9 @@
                     text="Check Version" description="This is a fine-grained version control plugin."/>
             <action id="SaveChangesAction" class="com.example.VersionControlPlugin.actions.SaveChangesAction"
                     text="Save Changes" description="Save current project."/>
-            <action id="CreateNewBranch" class="com.example.VersionControlPlugin.actions.CreateNewBranch"
-                    text="Create New Branch" description="Create new branch"/>
+            <action id="GitCommitActions" class="com.example.VersionControlPlugin.actions.GitCommitActions" text="Create Fine-Grained Branch"
+                    description="Creates a new branch and performs fine-grained commits"/>
+                <add-to-group group-id="ToolsMenu" anchor="first"/>
             <add-to-group group-id="MainMenu" anchor="last"/>
         </group>
     </actions>

@@ -48,14 +48,8 @@ public class Util {
     }
 
     public static boolean isInProjectDir(Path file){
-        Path src = VersionManager.getInstance().projectBasePath.resolve("src");
-        File dir=src.toFile();
-        try {
-            return file.toFile().getCanonicalPath().startsWith(dir.getCanonicalPath());
-        } catch (IOException e) {
-            System.out.println("Error when check path: " + e.getMessage());
-            return false;
-        }
+        Path dir = VersionManager.getInstance().projectBasePath.resolve(VersionManager.versionSavePath);
+        return !file.toAbsolutePath().startsWith(dir.toAbsolutePath());
     }
 
     public static void deleteDirectory(Path directoryPath) throws IOException {

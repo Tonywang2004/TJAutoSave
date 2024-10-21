@@ -55,21 +55,16 @@ public class VersionManager {
             Files.createFile(versionInfoPath);
             String formattedDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             Files.writeString(versionInfoPath, version + " " + formattedDateTime + "\n", StandardOpenOption.APPEND);
-            // V1.0
             Path ver = versionPath.resolve(versionPathPrefix + version);
             if (!Files.exists(ver)) {
                 Files.createDirectory(ver);
-                Util.readPaths(projectBasePath.resolve("src"), ver.resolve(projectDirPath));
+                Util.readPaths(projectBasePath, ver.resolve(projectDirPath));
             }
         } else {
             getCurrentVersion(versionInfoPath, versionManager);
         }
         Path MapTemp = tempDir.resolve(mapTempPath);
-        if (!Files.exists(MapTemp)) {
-            changeMap = new HashMap<>();
-        } else {
-            changeMap = Util.readHashMapFromFile(MapTemp);
-        }
+        changeMap = Files.exists(MapTemp) ? Util.readHashMapFromFile(MapTemp) : new HashMap<>();
     }
 
     private static void getCurrentVersion(Path versionInfo, VersionManager versionController) {
@@ -102,10 +97,9 @@ public class VersionManager {
         if (!Files.exists(currentVersionPath)) {
             Files.createDirectories(currentVersionPath);
         }
-        Util.readPaths(versionManager.projectBasePath.resolve("src"), currentVersionPath.resolve(projectDirPath));
+        Util.readPaths(projectBasePath, currentVersionPath.resolve(projectDirPath));
 
-
-        for (HashMap.Entry<Path, FileStatus> entry : versionManager.changeMap.entrySet()) {
+        for (HashMap.Entry<Path, FileStatus> entry : changeMap.entrySet()) {
             Path after = entry.getKey();
             FileStatus status = entry.getValue();
             Path changeFile = currentVersionPath.resolve(status.getHashCode());
@@ -124,7 +118,7 @@ public class VersionManager {
                 if (changes.status != Changes.Status.NONE) {
                     changes.saveToFile(changeFile.toString());
                 } else {
-                    versionManager.changeMap.remove(after);
+                    changeMap.remove(after);
                 }
             }
         }
@@ -133,19 +127,19 @@ public class VersionManager {
         if (!Files.exists(change)) {
             Files.createFile(change);
         }
-        Util.writeHashMapToFile(versionManager.changeMap, change);
+        Util.writeHashMapToFile(changeMap, change);
 
         if (changeMap.isEmpty()) {
             return false;
         }
-        versionManager.changeMap.clear();
+        changeMap.clear();
 
 
         Path versionInfo = codeVersion.resolve(verInfoPath);
         LocalDateTime currentDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formattedDateTime = currentDateTime.format(formatter);
-        Files.writeString(versionInfo, versionManager.version + " " + formattedDateTime + "\n", StandardOpenOption.APPEND);
+        Files.writeString(versionInfo, version + " " + formattedDateTime + "\n", StandardOpenOption.APPEND);
 
 
         Util.deleteDirectory(temp);

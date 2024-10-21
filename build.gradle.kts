@@ -21,7 +21,7 @@ intellij {
     version.set("2023.2.6")
     type.set("IC") // Target IDE Platform
 
-    plugins.set(listOf(/* Plugin Dependencies */))
+    plugins.set(listOf("Git4Idea", "com.intellij.java")) // 添加 Git4Idea 和 Java 支持
 }
 
 tasks {

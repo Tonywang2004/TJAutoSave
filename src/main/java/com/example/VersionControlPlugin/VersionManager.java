@@ -20,7 +20,7 @@ public class VersionManager {
 
     public static final String versionSavePath = ".TJAutoSave";
     public static final String tempPath = "temp";
-    private static final String versionPathPrefix = "Version";
+    public static final String versionPathPrefix = "Version";
     private final String verInfoPath = "verInfo.";
     private final String projectDirPath = "projectDir.";
     private final String changePath = "change.";
@@ -189,8 +189,7 @@ public class VersionManager {
                 Path changeDetails = desVer.resolve(map.get(filepath).getHashCode());
                 after = Files.readAllLines(changeDetails);
                 return new FileCompare(before, after);
-            }
-            else if (map.get(filepath).getStatus().equals("DELETE")) {
+            } else if (map.get(filepath).getStatus().equals("DELETE")) {
                 after = new ArrayList<>();
                 Path changeDetails = desVer.resolve(map.get(filepath).getHashCode());
                 before = Files.readAllLines(changeDetails);

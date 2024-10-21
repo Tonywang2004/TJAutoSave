@@ -13,10 +13,7 @@ public class showUIAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        if (versionControlUI == null) {
-            versionControlUI = new VersionControlUI(e.getProject());
-        }
-        versionControlUI.setVisible(true);
-        Config.versionControlUI = versionControlUI;
+        versionControlUI = new VersionControlUI(e.getProject());
+        versionControlUI.show();
     }
 }

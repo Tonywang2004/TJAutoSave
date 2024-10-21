@@ -16,7 +16,7 @@ public class showUIAction extends AnAction {
         if (versionControlUI == null) {
             versionControlUI = new VersionControlUI(e.getProject());
         }
-        versionControlUI.setVisible(true);
-        Config.versionControlUI = versionControlUI;
+        // versionControlUI.setVisible(true);
+        // Config.versionControlUI = versionControlUI;
     }
 }

@@ -32,7 +32,7 @@ class StartupActivity : ProjectActivity {
                     ApplicationManager.getApplication().invokeLater {
                         runWriteAction {
                             try {
-                                FileDocumentManager.getInstance().saveAllDocuments()
+//                                FileDocumentManager.getInstance().saveAllDocuments()
                                 if (VersionManager.getInstance().saveChanges()) {
                                     Notifications.Bus.notify(
                                         Notification(

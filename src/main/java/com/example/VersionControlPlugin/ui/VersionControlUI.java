@@ -102,7 +102,7 @@ public class VersionControlUI extends JFrame {
         try {
             var versionNodeInfoList = VersionManager.getInstance().getProjectVersionInfo();
             for (var map : versionNodeInfoList) {
-                versionListModel.addElement(new VersionInfo("Version " + map.get("version"), map.get("time")));
+                versionListModel.addElement(new VersionInfo(VersionManager.versionPathPrefix + map.get("version"), map.get("time")));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

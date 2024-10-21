@@ -6,10 +6,7 @@ import com.example.VersionControlPlugin.utils.Util;
 import com.example.VersionControlPlugin.objects.FileCompare;
 import com.intellij.openapi.project.Project;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -54,6 +51,7 @@ public class VersionManager {
         if (!Files.exists(versionInfoPath)) {
             Files.createFile(versionInfoPath);
             String formattedDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            version = 0;
             Files.writeString(versionInfoPath, version + " " + formattedDateTime + "\n", StandardOpenOption.APPEND);
             Path ver = versionPath.resolve(versionPathPrefix + version);
             if (!Files.exists(ver)) {
@@ -66,22 +64,41 @@ public class VersionManager {
         Path MapTemp = tempDir.resolve(mapTempPath);
         changeMap = Files.exists(MapTemp) ? Util.readHashMapFromFile(MapTemp) : new HashMap<>();
     }
+    public static String readLastLine(File file) throws IOException {
+        // 读取文件的最后一行
+        RandomAccessFile fileReader = null;
+        try {
+            fileReader = new RandomAccessFile(file, "r");
+            long fileLength = file.length() - 1;
+            StringBuilder sb = new StringBuilder();
 
+            // 设置初始位置为文件末尾
+            fileReader.seek(fileLength);
+
+            for (long pointer = fileLength; pointer >= 0; pointer--) {
+                fileReader.seek(pointer);
+                char c = (char) fileReader.read();
+                if (c == '\n' && pointer != fileLength) {
+                    break;
+                }
+                sb.append(c);
+            }
+
+            return sb.reverse().toString(); // 反转结果，因为是从末尾读取的
+        } finally {
+            if (fileReader != null) {
+                fileReader.close();
+            }
+        }
+    }
     private static void getCurrentVersion(Path versionInfo, VersionManager versionController) {
         String filePath = versionInfo.toString();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String Line;
-            String LastLine = null;
-            while ((Line = br.readLine()) != null) {
-                LastLine = Line;
-            }
-            if (LastLine != null) {
-                String result = Util.getLastPartBeforeSpace(LastLine);
-                versionController.version = Integer.parseInt(result);
-            }
-        } catch (FileNotFoundException e) {
-            System.err.println("File not Found: " + e.getMessage());
+        File file = new File(filePath);
+        try {
+            String lastLine = readLastLine(file);
+            System.out.println(lastLine);
+            String result = Util.getLastPartBeforeSpace(lastLine);
+            versionController.version = Integer.parseInt(result);
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
         }

@@ -11,13 +11,26 @@ repositories {
     mavenCentral()
 }
 
+<<<<<<< HEAD
+=======
+dependencies {
+    implementation("com.fifesoft:rsyntaxtextarea:3.5.1")
+}
+
+>>>>>>> fdf9b26566e193347bb363232aa67804ce096c95
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
     version.set("2023.2.6")
+<<<<<<< HEAD
     plugins.set(listOf("Git4Idea", "com.intellij.java")) // 添加 Git4Idea 和 Java 支持
     type.set("IC") // Target IDE Platform
 
+=======
+    type.set("IC") // Target IDE Platform
+
+    plugins.set(listOf(/* Plugin Dependencies */))
+>>>>>>> fdf9b26566e193347bb363232aa67804ce096c95
 }
 
 tasks {

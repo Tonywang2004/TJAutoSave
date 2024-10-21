@@ -1,4 +1,5 @@
 .gradle
+<<<<<<< HEAD
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
@@ -40,3 +41,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+=======
+build
+.idea
+>>>>>>> fdf9b26566e193347bb363232aa67804ce096c95

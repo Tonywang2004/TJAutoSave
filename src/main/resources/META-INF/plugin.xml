@@ -8,7 +8,7 @@
     <name>VersionControlPlugin</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@example.com" url="https://www.yourcompany.com">ExampleCompany</vendor>
+    <vendor email="support@example.com" url="https://www.yourcompany.com">Example</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
@@ -28,11 +28,13 @@
                              implementation="com.example.VersionControlPlugin.activities.StartupActivity"
                              order="last"/>
         <notificationGroup id="TJAutoSave" displayType="BALLOON"/>
+        <toolWindow id="CheckVersion" secondary="false" anchor="left" icon="AllIcons.Ide.Pipette_rollover"
+                    factoryClass="com.example.VersionControlPlugin.ui.VersionControlUIFactory"/>
     </extensions>
     <actions>
         <group id="TJAutoSave" text="TJAutoSave" description="This is a fine-grained version control plugin.">
-            <action id="VersionControl" class="com.example.VersionControlPlugin.actions.showUIAction"
-                    text="Check Version" description="This is a fine-grained version control plugin."/>
+<!--            <action id="VersionControl" class="com.example.VersionControlPlugin.actions.showUIAction"-->
+<!--                    text="Check Version" description="This is a fine-grained version control plugin."/>-->
             <action id="SaveChangesAction" class="com.example.VersionControlPlugin.actions.SaveChangesAction"
                     text="Save Changes" description="Save current project."/>
             <action id="ClearCacheAction" class="com.example.VersionControlPlugin.actions.ClearCacheAction"

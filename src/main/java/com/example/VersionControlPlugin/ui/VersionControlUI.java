@@ -1,4 +1,4 @@
-package com.example.TJAutoSave.ui;
+package com.example.VersionControlPlugin.ui;
 
 import javax.swing.*;
 import java.awt.*;
@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-import com.example.TJAutoSave.VersionManager;
-import com.example.TJAutoSave.objects.FileStatus;
-import com.example.TJAutoSave.objects.FileCompare;
+import com.example.VersionControlPlugin.VersionManager;
+import com.example.VersionControlPlugin.objects.FileStatus;
+import com.example.VersionControlPlugin.objects.FileCompare;
 import com.intellij.diff.DiffContentFactory;
 import com.intellij.diff.DiffManager;
 import com.intellij.diff.requests.SimpleDiffRequest;

@@ -33,8 +33,6 @@
     </extensions>
     <actions>
         <group id="TJAutoSave" text="TJAutoSave" description="This is a fine-grained version control plugin.">
-<!--            <action id="VersionControl" class="com.example.VersionControlPlugin.actions.showUIAction"-->
-<!--                    text="Check Version" description="This is a fine-grained version control plugin."/>-->
             <action id="SaveChangesAction" class="com.example.VersionControlPlugin.actions.SaveChangesAction"
                     text="Save Changes" description="Save current project."/>
             <action id="ClearCacheAction" class="com.example.VersionControlPlugin.actions.ClearCacheAction"

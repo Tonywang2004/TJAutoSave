@@ -43,8 +43,11 @@ class StartupActivity : ProjectActivity {
                                     )
 
                                     // refresh UI
-                                    VersionControlUIFactory.getVersionControlUI().clearListPanel();
-                                    VersionControlUIFactory.getVersionControlUI().getSavedVersion();
+                                    val ui = VersionControlUIFactory.getVersionControlUI()
+                                    if (ui != null) {
+                                        ui.clearListPanel()
+                                        ui.getSavedVersion()
+                                    }
                                 }
                             } catch (ex: IOException) {
                                 ex.printStackTrace()

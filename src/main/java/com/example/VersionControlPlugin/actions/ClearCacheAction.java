@@ -1,6 +1,7 @@
 package com.example.VersionControlPlugin.actions;
 
 import com.example.VersionControlPlugin.VersionManager;
+import com.example.VersionControlPlugin.ui.VersionControlUI;
 import com.example.VersionControlPlugin.ui.VersionControlUIFactory;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -10,6 +11,9 @@ public class ClearCacheAction extends AnAction {
         VersionManager.getInstance().clearCache(e.getProject());
 
         // refresh UI
-        VersionControlUIFactory.getVersionControlUI().clearListPanel();
+        VersionControlUI ui = VersionControlUIFactory.getVersionControlUI();
+        if (ui != null){
+            ui.clearListPanel();
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.VersionControlPlugin.actions;
 
 import com.example.VersionControlPlugin.VersionManager;
+import com.example.VersionControlPlugin.ui.VersionControlUIFactory;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -17,6 +18,11 @@ public class SaveChangesAction extends AnAction {
             if (VersionManager.getInstance().saveChanges()) {
                 Notifications.Bus.notify(new Notification("TJAutoSave", "TJAutoSave",
                         "Progress saved!", NotificationType.INFORMATION), project);
+
+                // refresh UI
+                VersionControlUIFactory.getVersionControlUI().clearListPanel();
+                VersionControlUIFactory.getVersionControlUI().getSavedVersion();
+
             } else {
                 Notifications.Bus.notify(new Notification("TJAutoSave", "TJAutoSave",
                         "No changes detected!", NotificationType.WARNING), project);

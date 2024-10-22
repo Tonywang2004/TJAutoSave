@@ -24,8 +24,8 @@ public class VersionManager {
     public static final String tempPath = "temp";
     public static final String versionPathPrefix = "Version";
     private final String verInfoPath = "verInfo.";
-    private final String changePath = "change.";
-    private final String mapTempPath = "mapTemp.";
+    private final String changePath = "changeInfo.";
+    private final String mapTempPath = "changeMapTemp.";
     public Path projectBasePath;
     public int version = 0;
     public HashMap<Path, FileStatus> changeMap;
@@ -156,13 +156,13 @@ public class VersionManager {
         try {
             Path savePath = projectBasePath.resolve(tjAutoSavePath);
             Path desVerPath = savePath.resolve(versionPathPrefix + desVersion);
-            HashMap<Path, FileStatus> map = Util.readHashMapFromFile(desVerPath.resolve(changePath));
+            FileStatus fileStatus = Util.readHashMapFromFile(desVerPath.resolve(changePath)).get(filepath);
 
-            if (map.get(filepath).getStatus().equals("CREATE")) {//create
-                Path changeDetails = desVerPath.resolve(map.get(filepath).getHashCode());
+            if (fileStatus.getStatus().equals("CREATE")) {//create
+                Path changeDetails = desVerPath.resolve(fileStatus.getHashCode());
                 return new FileCompare(new ArrayList<>(), Files.readAllLines(changeDetails));
-            } else if (map.get(filepath).getStatus().equals("DELETE")) {//delete
-                Path changeDetails = desVerPath.resolve(map.get(filepath).getHashCode());
+            } else if (fileStatus.getStatus().equals("DELETE")) {//delete
+                Path changeDetails = desVerPath.resolve(fileStatus.getHashCode());
                 return new FileCompare(Files.readAllLines(changeDetails), new ArrayList<>());
             }
 

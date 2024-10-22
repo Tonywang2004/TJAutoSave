@@ -29,10 +29,9 @@ public class Util {
         for (HashMap.Entry<Path, FileStatus> entry : map.entrySet()) {
             FileStatus status = entry.getValue();
             try {
-                Files.writeString(filePath, entry.getKey()
-                        + "$" + status.getStatus()
-                        + "@" + status.getTimestamp()
-                        + "#" + status.getHashCode() + "\n", StandardOpenOption.APPEND);
+                Files.writeString(filePath, "%s|%s|%s|%s\n".formatted(
+                        entry.getKey(), status.getStatus(), status.getTimestamp(), status.getHashCode()
+                ), StandardOpenOption.APPEND);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -44,11 +43,8 @@ public class Util {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath.toString()))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String path = line.substring(0, line.indexOf('$')).trim();
-                String status = line.substring(line.indexOf('$') + 1, line.indexOf('@')).trim();
-                String timestamp = line.substring(line.indexOf('@') + 1, line.indexOf('#')).trim();
-                String hashCode = line.substring(line.indexOf('#') + 1).trim();
-                map.put(Paths.get(path), new FileStatus(status, timestamp, hashCode));
+                String[] parts = line.split("\\|");
+                map.put(Paths.get(parts[0].trim()), new FileStatus(parts[1].trim(), parts[2].trim(), parts[3].trim()));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

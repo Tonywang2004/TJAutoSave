@@ -72,9 +72,10 @@ public class VersionManager {
         File file = new File(versionInfo.toString());
         try {
             String lastLine = Util.readLastLine(file);//读取最后一行，即当前版本信息
-            System.out.println(lastLine);
+            System.out.println("Version:" + lastLine);
             int SpaceIndex = lastLine.indexOf(' ');
-            versionManager.version = Integer.parseInt(SpaceIndex == -1 ? lastLine.trim() : lastLine.substring(0, SpaceIndex).trim());
+            String verStr = SpaceIndex == -1 ? lastLine.trim() : lastLine.substring(0, SpaceIndex).trim();
+            versionManager.version = verStr.isEmpty() ? 0 : Integer.parseInt(verStr);
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
         }

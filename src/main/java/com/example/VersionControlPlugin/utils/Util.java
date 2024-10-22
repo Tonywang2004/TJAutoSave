@@ -8,49 +8,6 @@ import java.nio.file.*;
 import java.util.HashMap;
 
 public class Util {
-    public static void readPaths(Path directoryPath,Path des){
-        if (Files.isDirectory(directoryPath)) {
-            StringBuilder paths = new StringBuilder();
-            collectFilePaths(directoryPath, paths);
-            writeToFile(paths.toString(), des);
-        } else {
-            System.out.println("Provided path is not a directory.");
-        }
-    }
-
-    private static void collectFilePaths(Path dir, StringBuilder paths) {
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-            for (Path entry : stream) {
-                if (Files.isDirectory(entry)) {
-                    if(Util.isInProjectDir(entry)) {
-                        collectFilePaths(entry, paths); // Recursive call for directories
-                    }
-                } else {
-                    paths.append(entry.toAbsolutePath()).append(System.lineSeparator());
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Error when collecting file paths.");
-        }
-    }
-
-    private static void writeToFile(String content,Path filePath) {
-        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
-            writer.write(content);
-        } catch (IOException e) {
-            System.out.println("Error when writing file paths.");
-        }
-    }
-
-    public static String getLastPartBeforeSpace(String line) {
-        int SpaceIndex = line.indexOf(' ');
-        return SpaceIndex == -1 ? line.trim() : line.substring(0, SpaceIndex).trim();
-    }
-
-    public static boolean isInProjectDir(Path file){
-        Path dir = VersionManager.getInstance().projectBasePath.resolve(VersionManager.versionSavePath);
-        return !file.toAbsolutePath().startsWith(dir.toAbsolutePath());
-    }
 
     public static void deleteDirectory(Path directoryPath) throws IOException {
         Files.walkFileTree(directoryPath, new java.nio.file.SimpleFileVisitor<>() {
@@ -65,14 +22,17 @@ public class Util {
                 Files.delete(dir);
                 return java.nio.file.FileVisitResult.CONTINUE;
             }
-        });
+        });//delete directory recursively
     }
 
     public static void writeHashMapToFile(HashMap<Path, FileStatus> map, Path filePath) {
-        for(HashMap.Entry<Path, FileStatus> entry : map.entrySet()){
+        for (HashMap.Entry<Path, FileStatus> entry : map.entrySet()) {
             FileStatus status = entry.getValue();
             try {
-                Files.writeString(filePath,entry.getKey()+"$"+status.getStatus()+"@"+status.getTimestamp()+"#"+status.getHashCode()+"\n",StandardOpenOption.APPEND);
+                Files.writeString(filePath, entry.getKey()
+                        + "$" + status.getStatus()
+                        + "@" + status.getTimestamp()
+                        + "#" + status.getHashCode() + "\n", StandardOpenOption.APPEND);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -88,11 +48,32 @@ public class Util {
                 String status = line.substring(line.indexOf('$') + 1, line.indexOf('@')).trim();
                 String timestamp = line.substring(line.indexOf('@') + 1, line.indexOf('#')).trim();
                 String hashCode = line.substring(line.indexOf('#') + 1).trim();
-                map.put(Paths.get(path),new FileStatus(status,timestamp,hashCode));
+                map.put(Paths.get(path), new FileStatus(status, timestamp, hashCode));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return map;
+    }
+
+    public static String readLastLine(File file) throws IOException {
+        // 读取文件的最后一行
+        StringBuilder sb = new StringBuilder();
+        try (RandomAccessFile fileReader = new RandomAccessFile(file, "r")) {
+            long fileLength = file.length();
+            if (fileLength == 0) {
+                return ""; // 如果文件为空，直接返回空字符串
+            }
+            // 从文件末尾开始向前读取
+            for (long pointer = fileLength - 1; pointer >= 0; pointer--) {
+                fileReader.seek(pointer);
+                char c = (char) fileReader.read();
+                if (c == '\n' && pointer != fileLength - 1) {
+                    break; // 遇到换行符，停止读取
+                }
+                sb.append(c);
+            }
+            return sb.reverse().toString(); // 反转结果，因为是从末尾读取的
+        }
     }
 }

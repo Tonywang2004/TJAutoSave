@@ -35,8 +35,8 @@ public class FileListener implements VirtualFileListener {
     @Override
     public void contentsChanged(@NotNull VirtualFileEvent event) {
         VirtualFile virtualFile = event.getFile();
-        if (!virtualFile.isDirectory() && Util.isInProjectDir(virtualFile.toNioPath())) {
-            Path temp = VersionManager.getInstance().projectBasePath.resolve(VersionManager.versionSavePath).resolve(VersionManager.tempPath);
+        if (!virtualFile.isDirectory() && VersionManager.getInstance().isInProjectDir(virtualFile.toNioPath())) {
+            Path temp = VersionManager.getInstance().projectBasePath.resolve(VersionManager.tjAutoSavePath).resolve(VersionManager.tempPath);
             Path newpath = temp.resolve(VersionManager.getInstance().changeMap.get(Paths.get(event.getFile().getPath())).getHashCode());
             try {
                 if (Files.mismatch(Paths.get(virtualFile.getPath()), newpath) == -1L) {
@@ -51,13 +51,12 @@ public class FileListener implements VirtualFileListener {
 
     private void storeChanges(@NotNull VirtualFileEvent event, String type) {
         VirtualFile virtualFile = event.getFile();
-        if (!virtualFile.isDirectory() && Util.isInProjectDir(virtualFile.toNioPath())) {
+        if (!virtualFile.isDirectory() && VersionManager.getInstance().isInProjectDir(virtualFile.toNioPath())) {
             Path filePath = Paths.get(virtualFile.getPath());
-            System.out.println(type + ": " + filePath);
+            System.out.println(type + ": " + filePath);//Log
             HashMap<Path, FileStatus> map = VersionManager.getInstance().changeMap;
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String formattedDateTime = LocalDateTime.now().format(formatter);
+            String formattedDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
             if (!map.containsKey(filePath)) {
                 FileStatus status = new FileStatus(type, formattedDateTime, String.valueOf(filePath.hashCode()));
@@ -82,7 +81,7 @@ public class FileListener implements VirtualFileListener {
             if (!type.equals("CREATE")) {
                 map = VersionManager.getInstance().changeMap;
                 String filename = map.get(Paths.get(event.getFile().getPath())).getHashCode();
-                Path newpath = VersionManager.getInstance().projectBasePath.resolve(VersionManager.versionSavePath).resolve(VersionManager.tempPath).resolve(filename);
+                Path newpath = VersionManager.getInstance().projectBasePath.resolve(VersionManager.tjAutoSavePath).resolve(VersionManager.tempPath).resolve(filename);
                 if (!Files.exists(newpath)) {
                     try {
                         Files.createFile(newpath);

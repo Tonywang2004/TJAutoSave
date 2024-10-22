@@ -20,11 +20,10 @@ import java.util.*;
 public class VersionManager {
     private static VersionManager versionManager;
 
-    public static final String versionSavePath = ".TJAutoSave";
+    public static final String tjAutoSavePath = ".TJAutoSave";
     public static final String tempPath = "temp";
     public static final String versionPathPrefix = "Version";
     private final String verInfoPath = "verInfo.";
-    private final String projectDirPath = "projectDir.";
     private final String changePath = "change.";
     private final String mapTempPath = "mapTemp.";
     public Path projectBasePath;
@@ -40,77 +39,42 @@ public class VersionManager {
 
     public void init(Project project) throws IOException {
         projectBasePath = Paths.get(Objects.requireNonNull(project.getBasePath()));
-        changeMap = new HashMap<>();
 
-        Path versionPath = projectBasePath.resolve(versionSavePath);
-        if (!Files.exists(versionPath)) {
-            Files.createDirectory(versionPath);
-            String sets = "attrib +H \"" + versionPath.toAbsolutePath() + "\"";
+        Path savePath = projectBasePath.resolve(tjAutoSavePath);
+        if (!Files.exists(savePath)) {
+            Files.createDirectory(savePath);
+            String sets = "attrib +H \"" + savePath.toAbsolutePath() + "\"";
             Runtime.getRuntime().exec(sets);//设置文件夹为隐藏
         }
 
-        Path tempDir = versionPath.resolve(tempPath);
+        Path tempDir = savePath.resolve(tempPath);
         if (!Files.exists(tempDir)) {
             Files.createDirectory(tempDir);
         }
 
-        Path versionInfoPath = versionPath.resolve(verInfoPath);
-        if (!Files.exists(versionInfoPath)) {
-            Files.createFile(versionInfoPath);
-            String formattedDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            version = 0;
-            Files.writeString(versionInfoPath, version + " " + formattedDateTime + "\n", StandardOpenOption.APPEND);
-            Path ver = versionPath.resolve(versionPathPrefix + version);
-            if (!Files.exists(ver)) {
-                Files.createDirectory(ver);
-                Util.readPaths(projectBasePath, ver.resolve(projectDirPath));
-            }
-        } else {
-            getCurrentVersion(versionInfoPath, versionManager);
-        }
+        //read changeMap from temp
+        changeMap = new HashMap<>();
         Path MapTemp = tempDir.resolve(mapTempPath);
         if (Files.exists(MapTemp)) {
             changeMap = Util.readHashMapFromFile(MapTemp);
         }
-        changeMap = Files.exists(MapTemp) ? Util.readHashMapFromFile(MapTemp) : new HashMap<>();
-    }
 
-    public static String readLastLine(File file) throws IOException {
-        // 读取文件的最后一行
-        RandomAccessFile fileReader = null;
-        try {
-            fileReader = new RandomAccessFile(file, "r");
-            long fileLength = file.length() - 1;
-            StringBuilder sb = new StringBuilder();
-
-            // 设置初始位置为文件末尾
-            fileReader.seek(fileLength);
-
-            for (long pointer = fileLength; pointer >= 0; pointer--) {
-                fileReader.seek(pointer);
-                char c = (char) fileReader.read();
-                if (c == '\n' && pointer != fileLength) {
-                    break;
-                }
-                sb.append(c);
-            }
-
-            return sb.reverse().toString(); // 反转结果，因为是从末尾读取的
-        } finally {
-            if (fileReader != null) {
-                fileReader.close();
-            }
+        Path versionInfo = savePath.resolve(verInfoPath);
+        if (!Files.exists(versionInfo)) {
+            Files.createFile(versionInfo);
+            version = 0;
+        } else {
+            getCurrentVersion(versionInfo, versionManager);
         }
     }
 
-    private static void getCurrentVersion(Path versionInfo, VersionManager versionController) {
-        String filePath = versionInfo.toString();
-        File file = new File(filePath);
+    private static void getCurrentVersion(Path versionInfo, VersionManager versionManager) {
+        File file = new File(versionInfo.toString());
         try {
-            String lastLine = readLastLine(file);
+            String lastLine = Util.readLastLine(file);//读取最后一行，即当前版本信息
             System.out.println(lastLine);
-            String result = Util.getLastPartBeforeSpace(lastLine);
-            versionController.version = Integer.parseInt(result);
+            int SpaceIndex = lastLine.indexOf(' ');
+            versionManager.version = Integer.parseInt(SpaceIndex == -1 ? lastLine.trim() : lastLine.substring(0, SpaceIndex).trim());
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
         }
@@ -120,29 +84,27 @@ public class VersionManager {
         if (changeMap.isEmpty()) {
             return false;
         }
-        Path codeVersion = projectBasePath.resolve(versionSavePath);
-        Path temp = codeVersion.resolve(tempPath);
-        Path currentVersionPath = codeVersion.resolve(versionPathPrefix + (++version));
+        Path savePath = projectBasePath.resolve(tjAutoSavePath);
+        Path temp = savePath.resolve(tempPath);
+        Path currentVersionPath = savePath.resolve(versionPathPrefix + (++version));
         if (!Files.exists(currentVersionPath)) {
             Files.createDirectories(currentVersionPath);
         }
-        Util.readPaths(projectBasePath, currentVersionPath.resolve(projectDirPath));
 
         for (HashMap.Entry<Path, FileStatus> entry : changeMap.entrySet()) {
-            Path after = entry.getKey();
             FileStatus status = entry.getValue();
+            Path before = temp.resolve(status.getHashCode());
+            Path after = entry.getKey();
             Path changeFile = currentVersionPath.resolve(status.getHashCode());
             if (status.getStatus().equals("CREATE")) {
                 if (!Files.exists(changeFile)) {
                     Files.copy(after, changeFile);
                 }
             } else if (status.getStatus().equals("DELETE")) {
-                Path before = temp.resolve(status.getHashCode());
                 if (!Files.exists(changeFile)) {
                     Files.copy(before, changeFile);
                 }
             } else {
-                Path before = temp.resolve(status.getHashCode());
                 Changes changes = new Changes(before, after);
                 if (changes.status != Changes.Status.NONE) {
                     changes.saveToFile(changeFile.toString());
@@ -163,13 +125,9 @@ public class VersionManager {
         }
         changeMap.clear();
 
-
-        Path versionInfo = codeVersion.resolve(verInfoPath);
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedDateTime = currentDateTime.format(formatter);
-        Files.writeString(versionInfo, version + " " + formattedDateTime + "\n", StandardOpenOption.APPEND);
-
+        String formattedDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Files.writeString(savePath.resolve(verInfoPath),
+                version + " " + formattedDateTime + "\n", StandardOpenOption.APPEND);
 
         Util.deleteDirectory(temp);
         Files.createDirectory(temp);
@@ -178,10 +136,7 @@ public class VersionManager {
     }
 
     public List<Map<String, String>> getProjectVersionInfo() throws IOException {
-        Path codeVersion = projectBasePath.resolve(versionSavePath);
-        Path currentVerDir = codeVersion.resolve(verInfoPath);
-        List<String> lines = Files.readAllLines(currentVerDir);
-        lines.remove(0);
+        List<String> lines = Files.readAllLines(projectBasePath.resolve(tjAutoSavePath).resolve(verInfoPath));
         List<Map<String, String>> resultList = new ArrayList<>();
         for (String line : lines) {
             String[] parts = line.split(" ");
@@ -194,41 +149,34 @@ public class VersionManager {
     }
 
     public HashMap<Path, FileStatus> getChangeDirOfDesVersion(String desVersion) {
-        return Util.readHashMapFromFile(projectBasePath.resolve(versionSavePath).resolve(desVersion).resolve(changePath));
+        return Util.readHashMapFromFile(projectBasePath.resolve(tjAutoSavePath).resolve(desVersion).resolve(changePath));
     }
 
     public FileCompare getFileOfCertainVersion(Path filepath, int desVersion) {
         try {
-            Path codeVersion = projectBasePath.resolve(versionSavePath);
-            Path temp = codeVersion.resolve(tempPath);
+            Path savePath = projectBasePath.resolve(tjAutoSavePath);
+            Path desVerPath = savePath.resolve(versionPathPrefix + desVersion);
+            HashMap<Path, FileStatus> map = Util.readHashMapFromFile(desVerPath.resolve(changePath));
 
-            Path desVer = codeVersion.resolve(versionPathPrefix + desVersion);
-            HashMap<Path, FileStatus> map = Util.readHashMapFromFile(desVer.resolve(changePath));
-            List<String> before = null;
-            List<String> after = null;
-
-            if (map.get(filepath).getStatus().equals("CREATE")) {
-                before = new ArrayList<>();
-                Path changeDetails = desVer.resolve(map.get(filepath).getHashCode());
-                after = Files.readAllLines(changeDetails);
-                return new FileCompare(before, after);
-            } else if (map.get(filepath).getStatus().equals("DELETE")) {
-                after = new ArrayList<>();
-                Path changeDetails = desVer.resolve(map.get(filepath).getHashCode());
-                before = Files.readAllLines(changeDetails);
-                return new FileCompare(before, after);
+            if (map.get(filepath).getStatus().equals("CREATE")) {//create
+                Path changeDetails = desVerPath.resolve(map.get(filepath).getHashCode());
+                return new FileCompare(new ArrayList<>(), Files.readAllLines(changeDetails));
+            } else if (map.get(filepath).getStatus().equals("DELETE")) {//delete
+                Path changeDetails = desVerPath.resolve(map.get(filepath).getHashCode());
+                return new FileCompare(Files.readAllLines(changeDetails), new ArrayList<>());
             }
 
-            map = versionManager.changeMap;
-            FileStatus status = map.get(filepath);
-            Path file = status == null ? filepath : temp.resolve(status.getHashCode());
-            int currentVer = version;
+            //change
+            List<String> before = null;
+            List<String> after = null;
+            FileStatus status = changeMap.get(filepath);
+            Path file = status == null ? filepath : savePath.resolve(tempPath).resolve(status.getHashCode());
 
             List<String> fileContent = null;
             if (Files.exists(file)) {
                 fileContent = Files.readAllLines(file);
             }
-            if (currentVer == desVersion) {
+            if (version == desVersion) {
                 if (fileContent == null) {
                     after = new ArrayList<>();
                 } else {
@@ -236,11 +184,9 @@ public class VersionManager {
                 }
             }
 
-            while (currentVer >= desVersion) {
-                Path version = codeVersion.resolve(versionPathPrefix + currentVer);
-                Path changeList = version.resolve(changePath);
-                map = Util.readHashMapFromFile(changeList);
-                status = map.get(filepath);
+            for (int currentVer = version; currentVer >= desVersion; ) {
+                Path version = savePath.resolve(versionPathPrefix + currentVer);
+                status = Util.readHashMapFromFile(version.resolve(changePath)).get(filepath);
                 if (status == null) {
                     currentVer--;
                     continue;
@@ -248,11 +194,7 @@ public class VersionManager {
                 if (status.getStatus().equals("DELETE")) {
                     fileContent = Files.readAllLines(version.resolve(status.getHashCode()));
                 } else if (status.getStatus().equals("CREATE")) {
-                    if (fileContent != null) {
-                        fileContent.clear();
-                    } else {
-                        fileContent = new ArrayList<>();
-                    }
+                    fileContent = new ArrayList<>();
                 } else {
                     Changes changes = Changes.loadFromFile(version.resolve(status.getHashCode()).toString());
                     Changes.rollBack(changes, fileContent);
@@ -273,15 +215,15 @@ public class VersionManager {
     }
 
     public void projectCloseSave() {
-        try {
-            Path codeVersion = projectBasePath.resolve(versionSavePath).resolve(tempPath).resolve(mapTempPath);
+        try { // 关闭时把changeMap存到文件中
+            Path mapTemp = projectBasePath.resolve(tjAutoSavePath).resolve(tempPath).resolve(mapTempPath);
             if (!changeMap.isEmpty()) {
-                if (!Files.exists(codeVersion)) {
-                    Files.createFile(codeVersion);
+                if (!Files.exists(mapTemp)) {
+                    Files.createFile(mapTemp);
                 }
-                Util.writeHashMapToFile(changeMap, codeVersion);// save changeMap to MapTempFile
+                Util.writeHashMapToFile(changeMap, mapTemp);// save changeMap to MapTempFile
             } else {
-                Files.deleteIfExists(codeVersion);
+                Files.deleteIfExists(mapTemp);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -292,14 +234,18 @@ public class VersionManager {
         SwingUtilities.invokeLater(() -> {
             ApplicationManager.getApplication().invokeLater(() -> {
                 try {
-                    Util.deleteDirectory(projectBasePath.resolve(versionSavePath));
+                    Util.deleteDirectory(projectBasePath.resolve(tjAutoSavePath));
                     init(project);
                     Notifications.Bus.notify(new Notification("TJAutoSave", "TJAutoSave",
                             "Cache cleared!", NotificationType.INFORMATION), project);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    throw new RuntimeException(ex);
                 }
             });
         });
+    }
+
+    public boolean isInProjectDir(Path file) {
+        return !file.toAbsolutePath().startsWith(projectBasePath.resolve(tjAutoSavePath).toAbsolutePath());
     }
 }

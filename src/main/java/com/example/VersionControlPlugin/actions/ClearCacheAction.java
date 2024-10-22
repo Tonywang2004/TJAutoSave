@@ -10,7 +10,5 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 public class ClearCacheAction extends AnAction {
     public void actionPerformed(AnActionEvent e){
         VersionManager.getInstance().clearCache(e.getProject());
-        Notifications.Bus.notify(new Notification("TJAutoSave", "TJAutoSave",
-                "Cache cleared!", NotificationType.INFORMATION), e.getProject());
     }
 }

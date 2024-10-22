@@ -1,5 +1,7 @@
 package com.example.VersionControlPlugin.ui;
 
+import com.example.VersionControlPlugin.VersionManager;
+import com.example.VersionControlPlugin.activities.StartupActivity;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -13,6 +15,12 @@ public class VersionControlUIFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        try {
+            if (VersionManager.getInstance().changeMap == null) {
+                VersionManager.getInstance().init(project);
+            }
+        } catch (Exception e) {
+        }
         if (versionControlUI == null) {
             versionControlUI = new VersionControlUI(project);
         }

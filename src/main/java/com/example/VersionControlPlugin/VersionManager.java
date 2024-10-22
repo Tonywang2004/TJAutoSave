@@ -4,8 +4,10 @@ import com.example.VersionControlPlugin.objects.Changes;
 import com.example.VersionControlPlugin.objects.FileStatus;
 import com.example.VersionControlPlugin.utils.Util;
 import com.example.VersionControlPlugin.objects.FileCompare;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 
 import javax.swing.*;
@@ -37,8 +39,8 @@ public class VersionManager {
     }
 
     public void init(Project project) throws IOException {
-        Path projectBasePath = Paths.get(project.getBasePath());
-        VersionManager.getInstance().projectBasePath = projectBasePath;
+        projectBasePath = Paths.get(Objects.requireNonNull(project.getBasePath()));
+        changeMap = new HashMap<>();
 
         Path versionPath = projectBasePath.resolve(versionSavePath);
         if (!Files.exists(versionPath)) {
@@ -67,6 +69,9 @@ public class VersionManager {
             getCurrentVersion(versionInfoPath, versionManager);
         }
         Path MapTemp = tempDir.resolve(mapTempPath);
+        if (Files.exists(MapTemp)) {
+            changeMap = Util.readHashMapFromFile(MapTemp);
+        }
         changeMap = Files.exists(MapTemp) ? Util.readHashMapFromFile(MapTemp) : new HashMap<>();
     }
 
@@ -288,8 +293,9 @@ public class VersionManager {
             ApplicationManager.getApplication().invokeLater(() -> {
                 try {
                     Util.deleteDirectory(projectBasePath.resolve(versionSavePath));
-                    changeMap.clear();
                     init(project);
+                    Notifications.Bus.notify(new Notification("TJAutoSave", "TJAutoSave",
+                            "Cache cleared!", NotificationType.INFORMATION), project);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }

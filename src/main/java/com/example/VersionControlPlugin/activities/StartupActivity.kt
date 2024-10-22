@@ -3,6 +3,7 @@ package com.example.VersionControlPlugin.activities
 import com.example.VersionControlPlugin.VersionManager
 import com.example.VersionControlPlugin.listener.CloseCacheListener
 import com.example.VersionControlPlugin.listener.FileListener
+import com.example.VersionControlPlugin.ui.VersionControlUIFactory
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
@@ -40,6 +41,10 @@ class StartupActivity : ProjectActivity {
                                             "Progress autosaved!", NotificationType.INFORMATION
                                         ), project
                                     )
+
+                                    // refresh UI
+                                    VersionControlUIFactory.getVersionControlUI().clearListPanel();
+                                    VersionControlUIFactory.getVersionControlUI().getSavedVersion();
                                 }
                             } catch (ex: IOException) {
                                 ex.printStackTrace()

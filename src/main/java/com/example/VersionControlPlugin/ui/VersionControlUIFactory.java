@@ -1,7 +1,6 @@
 package com.example.VersionControlPlugin.ui;
 
 import com.example.VersionControlPlugin.VersionManager;
-import com.example.VersionControlPlugin.activities.StartupActivity;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -11,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class VersionControlUIFactory implements ToolWindowFactory {
 
-    private VersionControlUI versionControlUI = null;
+    private static VersionControlUI versionControlUI = null;
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
@@ -28,5 +27,9 @@ public class VersionControlUIFactory implements ToolWindowFactory {
         Content content = contentFactory.createContent(versionControlUI.getComponent(), "", false);
         toolWindow.getContentManager().addContent(content);
         content.setDisposer(() -> versionControlUI = null);
+    }
+
+    public static VersionControlUI getVersionControlUI() {
+        return versionControlUI;
     }
 }

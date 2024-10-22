@@ -44,14 +44,7 @@ public class VersionControlUI {
 
 
         // get saved versions
-        try {
-            var versionNodeInfoList = VersionManager.getInstance().getProjectVersionInfo();
-            for (var map : versionNodeInfoList) {
-                versionListModel.addElement(new VersionInfo(VersionManager.versionPathPrefix + map.get("version"), map.get("time")));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        getSavedVersion();
 
         // ---- List selection event listener
         versionList.addListSelectionListener(e -> {
@@ -89,6 +82,30 @@ public class VersionControlUI {
                 }
             }
         });
+    }
+
+    /*** Clear Version & FileInfo list Panel ***/
+    public void clearListPanel() {
+        versionListModel.clear();
+        versionList.removeAll();
+        versionList.repaint();
+        fileInfoListModel.clear();
+        fileInfoList.removeAll();
+        fileInfoList.repaint();
+    }
+
+    /*** Get Saved Versions in version list ***/
+    public void getSavedVersion() {
+
+        // get saved versions
+        try {
+            var versionNodeInfoList = VersionManager.getInstance().getProjectVersionInfo();
+            for (var map : versionNodeInfoList) {
+                versionListModel.addElement(new VersionInfo(VersionManager.versionPathPrefix + map.get("version"), map.get("time")));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /*** Return mainPanel ***/
